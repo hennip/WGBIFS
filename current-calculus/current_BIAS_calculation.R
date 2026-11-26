@@ -193,26 +193,45 @@ df_pp_haul |> group_by(HaulNumber) |> summarise(sumx=round(sum(pp_haul),5)) |>
 # SIGMA CALCULATIONS
 # ================================
 
+
+# Add species specific TS values to pp_haul table
+df_pp_haul_wTS<-df_pp_haul |> 
+  mutate(species=as.numeric(species)) |> 
+  left_join(df_TS) |> 
+  select(TS, everything())
+
+filter(df_pp_haul_wTS, is.na(TS)==T) # This is empty if all species are assigned with TS-value
+#View(df_pp_haul_wTS |> filter(is.na(TS)==T))
+#View(unique(df_pp_haul_wTS |> filter(is.na(TS)==T) |> select(species)))
+
 # For each row in the df_pp_haul, calculate sigma
-df_sigma<-df_pp_haul |> 
-  mutate(d=9.5325669476e-07) |> # d is the same for all clupeids
-  #  mutate(d=ifelse(species==xxxx, 9.1, d) # Example on how to change d for a specific species xxxx
-  mutate(sigma=d*(CatchLengthClass_mm/10+offset)^2) |>  # sigma=d*(L_cm+offset_cm)^2
+df_sigma<-df_pp_haul_wTS |> 
+  mutate(sigma=4*3.14159265358979*10^(TS/10)*(CatchLengthClass_mm/10+offset)^2) |> 
   select(sigma, everything())
 
+tmp<-df_sigma |>#filter(rec=="37G9") |> 
+  select(species, sigma, rec, CatchLengthClass_mm, pp_haul, HaulNumber)
+write_xlsx(tmp,paste0(path_output,"df_sigma.xlsx"))
+
 # For each row, calculate product of sigma and pp_haul
+df_sigma_pp<-df_sigma |> 
+  mutate(sigma_x_pp=sigma*pp_haul) |> select(sigma_x_pp, everything())  
+#View(df_sigma_pp)
+
 # Then group by haul and rec and calculate haul specific sigma
-df_sigma_haul<-df_sigma |> 
-  mutate(sigma_x_pp=sigma*pp_haul) |> select(sigma_x_pp, everything()) |> 
+df_sigma_haul<-df_sigma_pp |> 
   group_by(HaulNumber, rec) |> 
   summarise(sigma_haul=sum(sigma_x_pp)/sum(pp_haul)) |> 
   select(sigma_haul, everything())
+
+write_xlsx(df_sigma_haul,paste0(path_output,"df_sigma_haul.xlsx"))
 
 # Rectangle specific sigma is calculated in this method
 # as a mean of haul specific sigmas of that rectangle 
 df_sigma_rec <- df_sigma_haul |> 
   group_by(rec) |> 
   summarise(sigma_rec=mean(sigma_haul)) 
+
 
 # ================================
 # COMBINE SIGMA WITH NASC

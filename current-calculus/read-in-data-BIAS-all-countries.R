@@ -9,6 +9,12 @@ source("current-calculus/func-read-in-trawl-data.R")
 df_rec_info<-read_xlsx(str_c("ICES_rec_areas.xlsx")) |> 
   rename(ICES_SD=SD, rec=ICES_rectangle, A_NM2=Area_NM2)
 
+# Species specific TS-values
+df_TS<-read_xlsx("TSvalues.xlsx") |> 
+  select(-Name) |> 
+  rename(species=Specode)
+
+
 # Single country option
 if(country!="all"){ 
   
@@ -143,8 +149,10 @@ catch_all<-catch_all |>
   mutate(CatchWeightAtLength=ifelse(CatchWeightUnit=="gr", CatchWeightAtLength/1000, CatchWeightAtLength)) |> 
   mutate(CatchLengthClass=as.numeric(CatchLengthClass)) |> 
   mutate(CatchLengthClass_mm=ifelse(CatchLengthCode=="cm", CatchLengthClass*10, CatchLengthClass)) |> 
-  mutate(offset=ifelse(CatchLengthCode=="cm", 0.45, 
-                       ifelse(CatchLengthCode=="halfcm", 0.2, 0))) 
+  #mutate(offset=ifelse(CatchLengthCode=="cm", 0.45, 
+  #                     ifelse(CatchLengthCode=="halfcm", 0.2, 0))) 
+  mutate(offset=ifelse(CatchLengthCode=="cm", 0.5, 
+                     ifelse(CatchLengthCode=="halfcm", 0.25, 0))) 
 
 # Note! In some cases there are several length categories for the same species
 catch_all|>
