@@ -51,7 +51,7 @@ choose_year<-2025
 # Option 1: Choose this if you wish to run only one country data
 # ===============================================================
 # Supported country abbreviations are "EE", "FI","SE","DE","PL", "LV" and "LT
-# countries<-"EE"
+countries<-"DE"
 
 # Option 2: Choose this if you wish to run multiple countries at once, but keeping
 # age length keys separately calculated for each country
@@ -62,11 +62,11 @@ choose_year<-2025
 # countries. The age length keys are formulated on ICES SD basis
 # ======================================================================
 #countries<-"all"
-countries<-"FI"
 
 Ncountries<-length(countries)
 
 for(i in 1:Ncountries){
+  #i<-1
   country<-countries[i]    
   # Read in data 
   source("current-calculus/read-in-data-BIAS-all-countries.R")
