@@ -200,8 +200,9 @@ df_pp_haul_wTS<-df_pp_haul |>
   left_join(df_TS) |> 
   select(TS, everything())
 
-#View(df_pp_haul_wTS)
 filter(df_pp_haul_wTS, is.na(TS)==T) # This is empty if all species are assigned with TS-value
+#View(df_pp_haul_wTS |> filter(is.na(TS)==T))
+#View(unique(df_pp_haul_wTS |> filter(is.na(TS)==T) |> select(species)))
 
 # For each row in the df_pp_haul, calculate sigma
 df_sigma<-df_pp_haul_wTS |> 
